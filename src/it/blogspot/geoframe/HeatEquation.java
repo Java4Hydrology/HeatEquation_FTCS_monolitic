@@ -23,7 +23,10 @@ import java.util.ArrayList;
 /**
  *
  *
- * @author
+ * @author sidereus, francesco.serafin.3@gmail.com
+ * @version 0.1
+ * @date November 08, 2015
+ * @copyright GNU Public License v3 AboutHydrology (Riccardo Rigon)
  */
 public class HeatEquation {
 
@@ -46,15 +49,7 @@ public class HeatEquation {
 
     private static void setIC(final double step) {
         setDomain(step);
-        setInitialVariables();
-    }
-
-    private static void setInitialVariables() {
-        for (int i = 0; i < IMAX; i++) {
-            boolean result = (x.get(i) < 0) ? left() : right();
-
-            if (!result) throw new RuntimeException("error!");
-        }
+        variablesInitialization();
     }
 
     private static void setDomain(final double step) {
@@ -62,6 +57,14 @@ public class HeatEquation {
         x.add(xL);
         for (int i = 1; i < IMAX; i++) x.add(x.get(i-1) + step);
 
+    }
+
+    private static void variablesInitialization() {
+        for (int i = 0; i < IMAX; i++) {
+            boolean result = (x.get(i) < 0) ? left() : right();
+
+            if (!result) throw new RuntimeException("error!");
+        }
     }
 
     private static boolean left() {
@@ -82,7 +85,7 @@ public class HeatEquation {
 
     }
 
-    private static void setVariables() {
+    private static void memoryAllocation() {
 
         x = new ArrayList<Double>(IMAX);
         temperature = new ArrayList<Double>(IMAX);
@@ -155,7 +158,6 @@ public class HeatEquation {
     }
 
     private static double setTimeStep(final double spacing) {
-
         return 0.45 * Math.pow(spacing, 2.0) / maxKappa();
     }
 
@@ -174,7 +176,7 @@ public class HeatEquation {
 
         final double dx = (xR - xL) / IMAX;
 
-        setVariables();
+        memoryAllocation();
         setIC(dx);
 
         mainPanel = new GraphPanel(temperature);
