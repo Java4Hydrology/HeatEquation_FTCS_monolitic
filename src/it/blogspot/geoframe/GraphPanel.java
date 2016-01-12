@@ -10,8 +10,10 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -32,6 +34,11 @@ public class GraphPanel extends JPanel {
 
     public GraphPanel(List<Double> scores) {
         this.scores = scores;
+        createAndShowGui();
+    }
+
+    public GraphPanel(Double[] scores) {
+        this.scores = Arrays.asList(scores);
         createAndShowGui();
     }
 
@@ -146,6 +153,12 @@ public class GraphPanel extends JPanel {
 
     public void setScores(List<Double> scores) {
         this.scores = scores;
+        invalidate();
+        this.repaint();
+    }
+
+    public void setScores(Double[] scores) {
+        this.scores = Arrays.asList(scores);
         invalidate();
         this.repaint();
     }

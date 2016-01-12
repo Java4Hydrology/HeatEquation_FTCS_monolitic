@@ -18,8 +18,6 @@
  */
 package it.blogspot.geoframe;
 
-import java.util.ArrayList;
-
 /**
  *
  *
@@ -41,9 +39,10 @@ public class HeatEquation {
     static final double TL = 20;
     static final double TR = 0;
 
-    static ArrayList<Double> x;
-    static ArrayList<Double> temperature;
-    static ArrayList<Double> kappa;
+    static Double[] x;
+    static Double[] temperature;
+    static Double[] tmpTemperature;
+    static Double[] kappa;
 
     static GraphPanel mainPanel;
 
@@ -54,32 +53,32 @@ public class HeatEquation {
 
     private static void setDomain(final double step) {
     
-        x.add(xL);
-        for (int i = 1; i < IMAX; i++) x.add(x.get(i-1) + step);
+        x[0] = xL;
+        for (int i = 1; i < IMAX; i++) x[i] = x[i-1] + step;
 
     }
 
     private static void variablesInitialization() {
         for (int i = 0; i < IMAX; i++) {
-            boolean result = (x.get(i) < 0) ? left() : right();
+            boolean result = (x[i] < 0) ? left(i) : right(i);
 
             if (!result) throw new RuntimeException("error!");
         }
     }
 
-    private static boolean left() {
+    private static boolean left(final int index) {
 
-        temperature.add(TL);
-        kappa.add(kappaL);
+        temperature[index] = TL;
+        kappa[index] = kappaL;
 
         return true;
 
     }
 
-    private static boolean right() {
+    private static boolean right(final int index) {
 
-        temperature.add(TR);
-        kappa.add(kappaR);
+        temperature[index] = TR;
+        kappa[index] = kappaR;
 
         return true;
 
@@ -87,14 +86,14 @@ public class HeatEquation {
 
     private static void memoryAllocation() {
 
-        x = new ArrayList<Double>(IMAX);
-        temperature = new ArrayList<Double>(IMAX);
-        kappa = new ArrayList<Double>(IMAX);
+        x = new Double[IMAX];
+        temperature = new Double[IMAX];
+        tmpTemperature = new Double[IMAX];
+        kappa = new Double[IMAX];
 
     }
 
     private static void temporalLoop(final double spacing) {
-
 
         for (int i = 0; i < NMAX; i++) {
 
@@ -114,46 +113,45 @@ public class HeatEquation {
 
     private static void computation(final double spacing, final double timeStep) {
 
-        ArrayList<Double> tmpTemperature = new ArrayList<Double>(IMAX);
+        double fluxPlus;
+        double fluxMinus;
+        double kappaPlus;
+        double kappaMinus;
 
         for (int i = 0; i < IMAX; i++) {
 
-            double fluxPlus;
-            double fluxMinus;
-
             if (i == 0) {
 
-                double kappaPlus = 0.5 * (kappa.get(i) + kappa.get(i + 1));
-                double kappaMinus = 0.5 * (kappa.get(i) + kappaL);
+                kappaPlus = 0.5 * (kappa[i] + kappa[i + 1]);
+                kappaMinus = 0.5 * (kappa[i] + kappaL);
 
-                fluxPlus = kappaPlus * (temperature.get(i + 1) - temperature.get(i)) / spacing;
-                fluxMinus = kappaMinus * (temperature.get(i) - TL) / (spacing / 2);
+                fluxPlus = kappaPlus * (temperature[i + 1] - temperature[i]) / spacing;
+                fluxMinus = kappaMinus * (temperature[i] - TL) / (spacing / 2);
 
             } else if (i == (IMAX - 1)) {
 
-                double kappaPlus = 0.5 * (kappa.get(i) + kappaR);
-                double kappaMinus = 0.5 * (kappa.get(i) + kappa.get(i - 1));
+                kappaPlus = 0.5 * (kappa[i] + kappaR);
+                kappaMinus = 0.5 * (kappa[i] + kappa[i - 1]);
 
-                fluxPlus = kappaPlus * (TR - temperature.get(i)) / (spacing / 2);
-                fluxMinus = kappaMinus * (temperature.get(i) - temperature.get(i - 1)) / spacing;
+                fluxPlus = kappaPlus * (TR - temperature[i]) / (spacing / 2);
+                fluxMinus = kappaMinus * (temperature[i] - temperature[i - 1]) / spacing;
 
             } else {
 
-                double kappaPlus = 0.5 * (kappa.get(i) + kappa.get(i + 1));
-                double kappaMinus = 0.5 * (kappa.get(i) + kappa.get(i - 1));
+                kappaPlus = 0.5 * (kappa[i] + kappa[i + 1]);
+                kappaMinus = 0.5 * (kappa[i] + kappa[i - 1]);
 
-                fluxPlus = kappaPlus * (temperature.get(i + 1) - temperature.get(i)) / spacing;
-                fluxMinus = kappaMinus * (temperature.get(i) - temperature.get(i - 1)) / spacing;
+                fluxPlus = kappaPlus * (temperature[i + 1] - temperature[i]) / spacing;
+                fluxMinus = kappaMinus * (temperature[i] - temperature[i - 1]) / spacing;
 
             }
 
-            double tmp_val = temperature.get(i) + timeStep / spacing * (fluxPlus - fluxMinus);
-            tmpTemperature.add(i, tmp_val);
+            double tmp_val = temperature[i] + timeStep / spacing * (fluxPlus - fluxMinus);
+            tmpTemperature[i] = tmp_val;
 
         }
 
-        temperature.removeAll(temperature);
-        temperature.addAll(tmpTemperature);
+        temperature = tmpTemperature;
 
     }
 
@@ -163,7 +161,7 @@ public class HeatEquation {
 
     private static double maxKappa() {
 
-        double max = kappa.get(0);
+        double max = kappa[0];
 
         for (Double val : kappa)
             max = (val > max) ? val : max;
