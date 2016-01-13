@@ -117,6 +117,7 @@ public class HeatEquation {
         double fluxMinus;
         double kappaPlus;
         double kappaMinus;
+        double tmp_val;
 
         for (int i = 0; i < IMAX; i++) {
 
@@ -146,7 +147,7 @@ public class HeatEquation {
 
             }
 
-            double tmp_val = temperature[i] + timeStep / spacing * (fluxPlus - fluxMinus);
+            tmp_val = temperature[i] + timeStep / spacing * (fluxPlus - fluxMinus);
             tmpTemperature[i] = tmp_val;
 
         }
